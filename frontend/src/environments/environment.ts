@@ -1,4 +1,5 @@
+const production = true;
 export const environment = {
-    production: false,
-    apiUrl: 'http://localhost:8000/api/v1'
+    production: production,
+    apiUrl: production ? 'https://flight-management-xo9z.onrender.com/api/v1' : 'http://localhost:8000/api/v1'
 };
