@@ -1,0 +1,134 @@
+<app-navbar></app-navbar>
+
+<div class="flight-management-container">
+    <div class="header">
+        <h1>Flight Management ✈️</h1>
+        <p>Manage all flights in the system</p>
+    </div>
+
+    <div class="action-bar">
+        <div class="search-box">
+            <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearch()"
+                placeholder="Search by airline, source, or destination..." />
+            <span class="search-icon">🔍</span>
+        </div>
+        <button class="btn-add" (click)="openAddModal()">
+            ➕ Add New Flight
+        </button>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <span class="stat-label">Total Flights:</span>
+            <span class="stat-value">{{ getFlightStats().total }}</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Showing:</span>
+            <span class="stat-value">{{ getFlightStats().filtered }}</span>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading flights...</div>
+
+    <div *ngIf="error && !loading && !showModal" class="error-message">{{ error }}</div>
+
+    <div *ngIf="!loading && filteredFlights.length === 0" class="no-data">
+        <p>No flights found.</p>
+    </div>
+
+    <div *ngIf="!loading && filteredFlights.length > 0" class="flights-grid">
+        <div *ngFor="let flight of filteredFlights" class="flight-card">
+            <div class="card-header">
+                <h3>{{ flight.airline }}</h3>
+                <span class="seats-badge">{{ flight.total_seats }} seats</span>
+            </div>
+
+            <div class="card-body">
+                <div class="route">
+                    <div class="location">
+                        <span class="label">From</span>
+                        <span class="value">{{ flight.source }}</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="location">
+                        <span class="label">To</span>
+                        <span class="value">{{ flight.destination }}</span>
+                    </div>
+                </div>
+
+                <div class="flight-info">
+                    <div class="info-item">
+                        <span class="label">Created:</span>
+                        <span class="value">{{ formatDate(flight.createdAt) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Updated:</span>
+                        <span class="value">{{ formatDate(flight.updatedAt) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn-edit" (click)="openEditModal(flight)">
+                    ✏️ Edit
+                </button>
+                <button class="btn-delete" (click)="deleteFlight(flight._id, flight.airline)">
+                    🗑️ Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>{{ isEditMode ? 'Edit Flight' : 'Add New Flight' }}</h2>
+                <button class="close-btn" (click)="closeModal()">×</button>
+            </div>
+
+            <form (ngSubmit)="saveFlight()" #flightForm="ngForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="airline">Airline Name *</label>
+                        <input type="text" id="airline" name="airline" [(ngModel)]="currentFlight.airline" required
+                            placeholder="e.g., Air India" [disabled]="modalLoading" />
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="source">Source *</label>
+                            <input type="text" id="source" name="source" [(ngModel)]="currentFlight.source" required
+                                placeholder="e.g., Delhi" [disabled]="modalLoading" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="destination">Destination *</label>
+                            <input type="text" id="destination" name="destination"
+                                [(ngModel)]="currentFlight.destination" required placeholder="e.g., Mumbai"
+                                [disabled]="modalLoading" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total_seats">Total Seats *</label>
+                        <input type="number" id="total_seats" name="total_seats" [(ngModel)]="currentFlight.total_seats"
+                            required min="1" placeholder="e.g., 180" [disabled]="modalLoading" />
+                    </div>
+
+                    <div *ngIf="error" class="error-message">{{ error }}</div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="modalLoading">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-save" [disabled]="modalLoading || !flightForm.valid">
+                        <span *ngIf="modalLoading">Saving...</span>
+                        <span *ngIf="!modalLoading">{{ isEditMode ? 'Update' : 'Create' }} Flight</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,150 @@
+<app-navbar></app-navbar>
+
+<div class="admin-dashboard-container">
+    <div class="welcome-header">
+        <h1>Admin Dashboard 📊</h1>
+        <p>Welcome back, {{ currentUser?.username }}!</p>
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading dashboard data...</div>
+
+    <div *ngIf="error && !loading" class="error-message">{{ error }}</div>
+
+    <div *ngIf="!loading && stats" class="dashboard-content">
+        <!-- Quick Action Cards -->
+        <div class="quick-actions">
+            <div class="action-card" (click)="navigateTo('/flight-management')">
+                <div class="action-icon">✈️</div>
+                <h3>Manage Flights</h3>
+                <p>Add, edit, or delete flights</p>
+            </div>
+
+            <div class="action-card" (click)="navigateTo('/schedule-management')">
+                <div class="action-icon">📅</div>
+                <h3>Manage Schedules</h3>
+                <p>Create and manage flight schedules</p>
+            </div>
+
+            <div class="action-card" (click)="navigateTo('/reports')">
+                <div class="action-icon">📈</div>
+                <h3>View Reports</h3>
+                <p>Detailed analytics and insights</p>
+            </div>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card flights">
+                <div class="stat-icon">✈️</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.total_flights }}</div>
+                    <div class="stat-label">Total Flights</div>
+                </div>
+            </div>
+
+            <div class="stat-card schedules">
+                <div class="stat-icon">📅</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.total_schedules }}</div>
+                    <div class="stat-label">Total Schedules</div>
+                </div>
+            </div>
+
+            <div class="stat-card upcoming">
+                <div class="stat-icon">🚀</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.upcoming_schedules }}</div>
+                    <div class="stat-label">Upcoming Flights</div>
+                </div>
+            </div>
+
+            <div class="stat-card passengers">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.total_passengers }}</div>
+                    <div class="stat-label">Total Passengers</div>
+                </div>
+            </div>
+
+            <div class="stat-card bookings">
+                <div class="stat-icon">🎫</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.total_bookings }}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+            </div>
+
+            <div class="stat-card confirmed">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.confirmed_bookings }}</div>
+                    <div class="stat-label">Confirmed</div>
+                </div>
+            </div>
+
+            <div class="stat-card cancelled">
+                <div class="stat-icon">❌</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.cancelled_bookings }}</div>
+                    <div class="stat-label">Cancelled</div>
+                </div>
+            </div>
+
+            <div class="stat-card success-rate">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ getBookingSuccessRate() }}</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings Section -->
+        <div class="recent-section">
+            <div class="section-header">
+                <h2>Recent Bookings</h2>
+                <button class="btn-view-all" (click)="navigateTo('/reports')">
+                    View All Reports →
+                </button>
+            </div>
+
+            <div *ngIf="recentBookings.length === 0" class="no-data">
+                <p>No bookings yet</p>
+            </div>
+
+            <div *ngIf="recentBookings.length > 0" class="bookings-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Passenger</th>
+                            <th>Flight</th>
+                            <th>Route</th>
+                            <th>Seats</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let booking of recentBookings">
+                            <td class="booking-id">{{ booking._id?.substring(0, 8) }}...</td>
+                            <td>{{ booking.user?.username || 'N/A' }}</td>
+                            <td>{{ booking.schedule?.flight?.airline || 'N/A' }}</td>
+                            <td>
+                                {{ booking.schedule?.flight?.source }} →
+                                {{ booking.schedule?.flight?.destination }}
+                            </td>
+                            <td>{{ booking.seats_booked }}</td>
+                            <td>{{ formatDate(booking.booking_time) }}</td>
+                            <td>
+                                <span [class]="getStatusClass(booking.status)">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

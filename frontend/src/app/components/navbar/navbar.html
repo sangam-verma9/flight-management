@@ -1,0 +1,60 @@
+<nav class="navbar" *ngIf="isLoggedIn">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <h2><img src="/logo.png" class="logo" alt="logo"> Flight Management</h2>
+        </div>
+
+        <div class="navbar-menu">
+            <ul class="nav-links">
+                <!-- Admin Links -->
+                <ng-container *ngIf="isAdmin">
+                    <li>
+                        <a (click)="navigateTo('/admin-dashboard')" class="nav-link">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a (click)="navigateTo('/flight-management')" class="nav-link">
+                            Flights
+                        </a>
+                    </li>
+                    <li>
+                        <a (click)="navigateTo('/schedule-management')" class="nav-link">
+                            Schedules
+                        </a>
+                    </li>
+                    <li>
+                        <a (click)="navigateTo('/reports')" class="nav-link">
+                            Reports
+                        </a>
+                    </li>
+                </ng-container>
+
+                <!-- Passenger Links -->
+                <ng-container *ngIf="!isAdmin">
+                    <li>
+                        <a (click)="navigateTo('/passenger-dashboard')" class="nav-link">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a (click)="navigateTo('/flight-search')" class="nav-link">
+                            Search Flights
+                        </a>
+                    </li>
+                    <li>
+                        <a (click)="navigateTo('/booking-history')" class="nav-link">
+                            My Bookings
+                        </a>
+                    </li>
+                </ng-container>
+            </ul>
+
+            <div class="user-menu">
+                <span class="user-name">{{ currentUser?.username }}</span>
+                <span class="user-role">{{ currentUser?.role }}</span>
+                <button class="btn-logout" (click)="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+</nav>

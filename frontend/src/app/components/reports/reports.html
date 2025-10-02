@@ -1,0 +1,236 @@
+<app-navbar></app-navbar>
+
+<div class="reports-container">
+    <div class="header">
+        <h1>Reports & Analytics 📊</h1>
+        <p>Comprehensive insights and statistics</p>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-nav">
+        <button class="tab-btn" [class.active]="activeTab === 'occupancy'" (click)="switchTab('occupancy')">
+            📈 Occupancy Report
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'cancellation'" (click)="switchTab('cancellation')">
+            ❌ Cancellation Report
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'revenue'" (click)="switchTab('revenue')">
+            💰 Revenue Report
+        </button>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="actions-bar">
+        <button class="btn-refresh" (click)="refreshCurrentReport()" [disabled]="loading">
+            🔄 Refresh
+        </button>
+        <button *ngIf="activeTab === 'occupancy' && occupancyData.length > 0" class="btn-export"
+            (click)="exportToCSV('occupancy')">
+            📥 Export CSV
+        </button>
+        <button *ngIf="activeTab === 'revenue' && revenueData.length > 0" class="btn-export"
+            (click)="exportToCSV('revenue')">
+            📥 Export CSV
+        </button>
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading report data...</div>
+
+    <div *ngIf="error && !loading" class="error-message">{{ error }}</div>
+
+    <!-- Occupancy Report -->
+    <div *ngIf="activeTab === 'occupancy' && !loading" class="report-content">
+        <div *ngIf="occupancyData.length === 0" class="no-data">
+            <p>No occupancy data available</p>
+        </div>
+
+        <div *ngIf="occupancyData.length > 0">
+            <!-- Summary Card -->
+            <div class="summary-card">
+                <h3>Overall Occupancy Summary</h3>
+                <div class="summary-stats">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Flights</span>
+                        <span class="summary-value">{{ occupancyData.length }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Seats Offered</span>
+                        <span class="summary-value">{{ getTotalSeatsOffered() }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Seats Booked</span>
+                        <span class="summary-value">{{ getTotalSeatsBooked() }}</span>
+                    </div>
+                    <div class="summary-item highlight">
+                        <span class="summary-label">Average Occupancy</span>
+                        <span class="summary-value">{{ getTotalOccupancy() }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupancy Table -->
+            <div class="table-container">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Airline</th>
+                            <th>Route</th>
+                            <th>Schedules</th>
+                            <th>Seats Offered</th>
+                            <th>Seats Booked</th>
+                            <th>Available</th>
+                            <th>Occupancy Rate</th>
+                            <th>Bookings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of occupancyData">
+                            <td class="airline">{{ item.airline }}</td>
+                            <td class="route">{{ item.route }}</td>
+                            <td>{{ item.total_schedules }}</td>
+                            <td>{{ item.total_seats_offered }}</td>
+                            <td>{{ item.total_seats_booked }}</td>
+                            <td>{{ item.available_seats }}</td>
+                            <td>
+                                <span class="occupancy-badge"
+                                    [style.background-color]="getOccupancyColor(item.occupancy_rate)">
+                                    {{ item.occupancy_rate }}
+                                </span>
+                            </td>
+                            <td>{{ item.total_bookings }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancellation Report -->
+    <div *ngIf="activeTab === 'cancellation' && !loading" class="report-content">
+        <div *ngIf="!cancellationData" class="no-data">
+            <p>No cancellation data available</p>
+        </div>
+
+        <div *ngIf="cancellationData">
+            <!-- Summary Card -->
+            <div class="summary-card">
+                <h3>Cancellation Summary</h3>
+                <div class="summary-stats">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Bookings</span>
+                        <span class="summary-value">{{ cancellationData.summary?.total_bookings || 0 }}</span>
+                    </div>
+                    <div class="summary-item confirmed">
+                        <span class="summary-label">Confirmed</span>
+                        <span class="summary-value">{{ cancellationData.summary?.confirmed_bookings || 0 }}</span>
+                    </div>
+                    <div class="summary-item cancelled">
+                        <span class="summary-label">Cancelled</span>
+                        <span class="summary-value">{{ cancellationData.summary?.cancelled_bookings || 0 }}</span>
+                    </div>
+                    <div class="summary-item highlight">
+                        <span class="summary-label">Cancellation Rate</span>
+                        <span class="summary-value">{{ cancellationData.summary?.cancellation_rate || '0%' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Cancellations -->
+            <div class="section-header">
+                <h3>Recent Cancellations</h3>
+            </div>
+
+            <div *ngIf="!cancellationData.recent_cancellations || cancellationData.recent_cancellations.length === 0"
+                class="no-data">
+                <p>No recent cancellations</p>
+            </div>
+
+            <div *ngIf="cancellationData.recent_cancellations && cancellationData.recent_cancellations.length > 0"
+                class="cancellations-grid">
+                <div *ngFor="let booking of cancellationData.recent_cancellations" class="cancellation-card">
+                    <div class="card-header-simple">
+                        <h4>{{ booking.schedule?.flight?.airline || 'N/A' }}</h4>
+                        <span class="status-cancelled">CANCELLED</span>
+                    </div>
+                    <div class="card-body-simple">
+                        <div class="detail">
+                            <span class="label">Route:</span>
+                            <span class="value">
+                                {{ booking.schedule?.flight?.source || 'N/A' }} →
+                                {{ booking.schedule?.flight?.destination || 'N/A' }}
+                            </span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Passenger:</span>
+                            <span class="value">{{ booking.user?.username || booking.user?.email || 'N/A' }}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Seats:</span>
+                            <span class="value">{{ booking.seats_booked }}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Cancelled On:</span>
+                            <span class="value">{{ formatDate(booking.updatedAt) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Report -->
+    <div *ngIf="activeTab === 'revenue' && !loading" class="report-content">
+        <div *ngIf="revenueData.length === 0" class="no-data">
+            <p>No revenue data available</p>
+        </div>
+
+        <div *ngIf="revenueData.length > 0">
+            <!-- Summary Card -->
+            <div class="summary-card">
+                <h3>Revenue Summary</h3>
+                <div class="summary-stats">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Flights</span>
+                        <span class="summary-value">{{ revenueData.length }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Bookings</span>
+                        <span class="summary-value">{{ getTotalConfirmedBookings() }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Seats Sold</span>
+                        <span class="summary-value">{{ getTotalSeatsSold() }}</span>
+                    </div>
+                    <div class="summary-item highlight">
+                        <span class="summary-label">Total Revenue Metric</span>
+                        <span class="summary-value">{{ getTotalRevenue() }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Table -->
+            <div class="table-container">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Airline</th>
+                            <th>Route</th>
+                            <th>Total Bookings</th>
+                            <th>Seats Sold</th>
+                            <th>Revenue Metric</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of revenueData">
+                            <td class="airline">{{ item.airline }}</td>
+                            <td class="route">{{ item.route }}</td>
+                            <td>{{ item.total_confirmed_bookings }}</td>
+                            <td>{{ item.total_seats_sold }}</td>
+                            <td class="revenue">{{ item.revenue_metric }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

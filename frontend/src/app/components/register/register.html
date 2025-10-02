@@ -1,0 +1,65 @@
+<div class="register-container">
+    <div class="register-card">
+        <h2>Flight Management System</h2>
+        <h3>Register</h3>
+
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+            <div class="form-group">
+                <label for="username">Username *</label>
+                <input type="text" id="username" name="username" [(ngModel)]="username" required minlength="3"
+                    placeholder="Enter your username" [disabled]="loading" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" [(ngModel)]="email" required email
+                    placeholder="Enter your email" [disabled]="loading" />
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone" [(ngModel)]="phone" placeholder="Enter your phone number"
+                    [disabled]="loading" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" [(ngModel)]="password" required minlength="6"
+                    placeholder="Enter your password" [disabled]="loading" />
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password *</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword"
+                    required placeholder="Confirm your password" [disabled]="loading" />
+            </div>
+
+            <div class="form-group">
+                <label for="role">Register as</label>
+                <select id="role" name="role" [(ngModel)]="role" [disabled]="loading">
+                    <option value="PASSENGER">Passenger</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+            </div>
+
+            <div class="error-message" *ngIf="error">
+                {{ error }}
+            </div>
+
+            <div class="success-message" *ngIf="success">
+                {{ success }}
+            </div>
+
+            <button type="submit" class="btn-primary" [disabled]="loading || !registerForm.valid">
+                <span *ngIf="loading">Registering...</span>
+                <span *ngIf="!loading">Register</span>
+            </button>
+        </form>
+
+        <div class="login-link">
+            <p>Already have an account?
+                <a (click)="goToLogin()">Login here</a>
+            </p>
+        </div>
+    </div>
+</div>

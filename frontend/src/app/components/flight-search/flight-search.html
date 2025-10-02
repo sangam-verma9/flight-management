@@ -1,0 +1,134 @@
+<app-navbar></app-navbar>
+
+<div class="search-container">
+    <h1>Search Flights ✈️</h1>
+
+    <div class="search-card">
+        <form (ngSubmit)="searchFlights()" #searchForm="ngForm">
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" [(ngModel)]="searchParams.date" [disabled]="loading" />
+                </div>
+
+                <div class="form-group">
+                    <label for="source">From</label>
+                    <input type="text" id="source" name="source" [(ngModel)]="searchParams.source"
+                        placeholder="e.g., Delhi" [disabled]="loading" />
+                </div>
+
+                <div class="form-group">
+                    <label for="destination">To</label>
+                    <input type="text" id="destination" name="destination" [(ngModel)]="searchParams.destination"
+                        placeholder="e.g., Mumbai" [disabled]="loading" />
+                </div>
+
+                <div class="form-group">
+                    <label for="airline">Airline</label>
+                    <input type="text" id="airline" name="airline" [(ngModel)]="searchParams.airline"
+                        placeholder="e.g., Air India" [disabled]="loading" />
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn-primary" [disabled]="loading">
+                    <span *ngIf="loading">Searching...</span>
+                    <span *ngIf="!loading">🔍 Search Flights</span>
+                </button>
+                <button type="button" class="btn-secondary" (click)="clearSearch()" [disabled]="loading">
+                    Clear
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div *ngIf="error && searched" class="error-message">{{ error }}</div>
+
+    <div *ngIf="loading" class="loading-spinner">
+        <p>Searching for flights...</p>
+    </div>
+
+    <div *ngIf="!loading && flights.length > 0" class="results-container">
+        <h2>Available Flights ({{ flights.length }})</h2>
+
+        <div class="flights-grid">
+            <div *ngFor="let flight of flights" class="flight-card">
+                <div class="flight-header">
+                    <h3>{{ flight.flight?.airline }}</h3>
+                    <span class="available-seats">
+                        {{ flight.available_seats }} seats available
+                    </span>
+                </div>
+
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="city">{{ flight.flight?.source }}</div>
+                        <div class="time">{{ formatDate(flight.departure_time) }}</div>
+                    </div>
+                    <div class="route-arrow">→</div>
+                    <div class="route-point">
+                        <div class="city">{{ flight.flight?.destination }}</div>
+                        <div class="time">{{ formatDate(flight.arrival_time) }}</div>
+                    </div>
+                </div>
+
+                <div class="flight-info">
+                    <span class="duration">
+                        ⏱️ {{ getDuration(flight.departure_time, flight.arrival_time) }}
+                    </span>
+                </div>
+
+                <button class="btn-book" (click)="selectFlight(flight)" [disabled]="flight.available_seats === 0">
+                    <span *ngIf="flight.available_seats > 0">Book Now</span>
+                    <span *ngIf="flight.available_seats === 0">Sold Out</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div *ngIf="selectedFlight" class="modal-overlay" (click)="closeBookingModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Book Flight</h2>
+                <button class="close-btn" (click)="closeBookingModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="booking-summary">
+                    <h3>{{ selectedFlight.flight?.airline }}</h3>
+                    <p class="route">
+                        {{ selectedFlight.flight?.source }} → {{ selectedFlight.flight?.destination }}
+                    </p>
+                    <div class="time-info">
+                        <div>
+                            <strong>Departure:</strong> {{ formatDate(selectedFlight.departure_time) }}
+                        </div>
+                        <div>
+                            <strong>Arrival:</strong> {{ formatDate(selectedFlight.arrival_time) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="seat-selection">
+                    <label for="seats">Number of Seats</label>
+                    <input type="number" id="seats" [(ngModel)]="seatsToBook" min="1"
+                        [max]="selectedFlight.available_seats" [disabled]="bookingInProgress" />
+                    <p class="seats-info">
+                        Available: {{ selectedFlight.available_seats }} seats
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" (click)="closeBookingModal()" [disabled]="bookingInProgress">
+                    Cancel
+                </button>
+                <button class="btn-confirm" (click)="confirmBooking()" [disabled]="bookingInProgress">
+                    <span *ngIf="bookingInProgress">Booking...</span>
+                    <span *ngIf="!bookingInProgress">Confirm Booking</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -27,3 +27,17 @@ exports.isAuthUser = async (req, res, next) => {
         return res.status(401).send({ success: false, message: "Invalid or expired token" });
     }
 };
+
+exports.isAdmin = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'ADMIN') {
+            return res.status(403).send({
+                success: false,
+                message: "Access denied. Admin privileges required."
+            });
+        }
+        next();
+    } catch (error) {
+        return res.status(500).send({ success: false, message: error.message });
+    }
+};

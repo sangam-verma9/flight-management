@@ -1,0 +1,70 @@
+<app-navbar></app-navbar>
+
+<div class="dashboard-container">
+    <div class="welcome-section">
+        <h1>Welcome back, {{ currentUser?.username }}! ✈️</h1>
+        <p>Ready to book your next flight?</p>
+    </div>
+
+    <div class="action-cards">
+        <div class="action-card" (click)="navigateToSearch()">
+            <div class="card-icon">🔍</div>
+            <h3>Search Flights</h3>
+            <p>Find and book your next flight</p>
+        </div>
+
+        <div class="action-card" (click)="navigateToBookings()">
+            <div class="card-icon">📋</div>
+            <h3>My Bookings</h3>
+            <p>View and manage your bookings</p>
+        </div>
+    </div>
+
+    <div class="recent-bookings-section">
+        <h2>Recent Bookings</h2>
+
+        <div *ngIf="loading" class="loading">Loading bookings...</div>
+
+        <div *ngIf="error && !loading" class="error-message">{{ error }}</div>
+
+        <div *ngIf="!loading && !error && recentBookings.length === 0" class="no-data">
+            <p>You haven't made any bookings yet.</p>
+            <button class="btn-primary" (click)="navigateToSearch()">
+                Book Your First Flight
+            </button>
+        </div>
+
+        <div *ngIf="!loading && recentBookings.length > 0" class="bookings-list">
+            <div *ngFor="let booking of recentBookings" class="booking-card">
+                <div class="booking-header">
+                    <h3>{{ booking.schedule?.flight?.airline }}</h3>
+                    <span [class]="getStatusClass(booking.status)">
+                        {{ booking.status }}
+                    </span>
+                </div>
+                <div class="booking-details">
+                    <div class="detail-row">
+                        <span class="label">From:</span>
+                        <span class="value">{{ booking.schedule?.flight?.source }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">To:</span>
+                        <span class="value">{{ booking.schedule?.flight?.destination }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Departure:</span>
+                        <span class="value">{{ formatDate(booking.schedule?.departure_time) }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Seats:</span>
+                        <span class="value">{{ booking.seats_booked }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button *ngIf="!loading && recentBookings.length > 0" class="btn-secondary" (click)="navigateToBookings()">
+            View All Bookings
+        </button>
+    </div>
+</div>

@@ -1,0 +1,174 @@
+<app-navbar></app-navbar>
+
+<div class="booking-history-container">
+    <h1>My Bookings 📋</h1>
+
+    <!-- Stats Cards -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-value">{{ getBookingStats().total }}</div>
+            <div class="stat-label">Total Bookings</div>
+        </div>
+        <div class="stat-card confirmed">
+            <div class="stat-value">{{ getBookingStats().confirmed }}</div>
+            <div class="stat-label">Confirmed</div>
+        </div>
+        <div class="stat-card cancelled">
+            <div class="stat-value">{{ getBookingStats().cancelled }}</div>
+            <div class="stat-label">Cancelled</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filter-group">
+            <label for="search">Search</label>
+            <input type="text" id="search" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"
+                placeholder="Search by airline, source, or destination" />
+        </div>
+
+        <div class="filter-group">
+            <label for="status">Status</label>
+            <select id="status" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+                <option value="ALL">All</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading bookings...</div>
+
+    <div *ngIf="error && !loading" class="error-message">{{ error }}</div>
+
+    <div *ngIf="!loading && !error && filteredBookings.length === 0" class="no-data">
+        <p>No bookings found.</p>
+    </div>
+
+    <div *ngIf="!loading && filteredBookings.length > 0" class="bookings-list">
+        <div *ngFor="let booking of filteredBookings" class="booking-card">
+            <div class="booking-header">
+                <div class="booking-info">
+                    <h3>{{ booking.schedule?.flight?.airline }}</h3>
+                    <p class="booking-id">Booking ID: {{ booking._id }}</p>
+                </div>
+                <span [class]="getStatusClass(booking.status)">
+                    {{ booking.status }}
+                </span>
+            </div>
+
+            <div class="booking-route">
+                <div class="route-info">
+                    <span class="city">{{ booking.schedule?.flight?.source }}</span>
+                    <span class="arrow">→</span>
+                    <span class="city">{{ booking.schedule?.flight?.destination }}</span>
+                </div>
+            </div>
+
+            <div class="booking-details">
+                <div class="detail-item">
+                    <span class="label">Departure:</span>
+                    <span class="value">{{ formatDate(booking.schedule?.departure_time) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Arrival:</span>
+                    <span class="value">{{ formatDate(booking.schedule?.arrival_time) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Seats Booked:</span>
+                    <span class="value">{{ booking.seats_booked }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Booked On:</span>
+                    <span class="value">{{ formatDate(booking.booking_time) }}</span>
+                </div>
+            </div>
+
+            <div class="booking-actions">
+                <button class="btn-view" (click)="viewDetails(booking)">
+                    View Details
+                </button>
+                <button *ngIf="booking.status === 'CONFIRMED'" class="btn-cancel" (click)="cancelBooking(booking._id)">
+                    Cancel Booking
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div *ngIf="selectedBooking" class="modal-overlay" (click)="closeDetails()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Booking Details</h2>
+                <button class="close-btn" (click)="closeDetails()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="detail-section">
+                    <h3>Flight Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="label">Airline:</span>
+                            <span class="value">{{ selectedBooking.schedule?.flight?.airline }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">From:</span>
+                            <span class="value">{{ selectedBooking.schedule?.flight?.source }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">To:</span>
+                            <span class="value">{{ selectedBooking.schedule?.flight?.destination }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Schedule Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="label">Departure:</span>
+                            <span class="value">{{ formatDate(selectedBooking.schedule?.departure_time) }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Arrival:</span>
+                            <span class="value">{{ formatDate(selectedBooking.schedule?.arrival_time) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Booking Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="label">Booking ID:</span>
+                            <span class="value">{{ selectedBooking._id }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Seats Booked:</span>
+                            <span class="value">{{ selectedBooking.seats_booked }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Status:</span>
+                            <span [class]="getStatusClass(selectedBooking.status)">
+                                {{ selectedBooking.status }}
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Booked On:</span>
+                            <span class="value">{{ formatDate(selectedBooking.booking_time) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-close" (click)="closeDetails()">Close</button>
+                <button *ngIf="selectedBooking.status === 'CONFIRMED'" class="btn-cancel-modal"
+                    (click)="cancelBooking(selectedBooking._id)" [disabled]="cancellingBooking">
+                    <span *ngIf="cancellingBooking">Cancelling...</span>
+                    <span *ngIf="!cancellingBooking">Cancel Booking</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

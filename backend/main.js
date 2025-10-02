@@ -7,14 +7,23 @@ app.use(express.json());
 app.use(cors());
 dotenv.config();
 
+const userRoute = require("./routes/userRoute");
+const flightRoute = require("./routes/flightRoute");
+const scheduleRoute = require("./routes/scheduleRoute");
+const bookingRoute = require("./routes/bookingRoute");
+const adminRoute = require("./routes/adminRoute");
 
-// const ticket = require("./routes/ticketRoute");
-const user = require("./routes/userRoute");
-// const movie = require("./routes/movieRoute");
+app.use("/api/v1", userRoute);
+app.use("/api/v1", bookingRoute);
+app.use("/api/v1", flightRoute);
+app.use("/api/v1", scheduleRoute);
+app.use("/api/v1", adminRoute);
 
-// app.use("/api/v1", ticket);
-app.use("/api/v1", user);
-// app.use("/api/v1", movie);
-
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Flight Management System API is running"
+    });
+});
 
 module.exports = app;
