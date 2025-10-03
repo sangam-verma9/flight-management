@@ -18,6 +18,7 @@ const flightSchema = new mongoose.Schema({
         required: [true, "Total seats are required"],
         min: [1, "There must be at least one seat"],
     },
+    logo: String,
     
 }, {
     timestamps: true,

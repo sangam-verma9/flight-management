@@ -1,5 +1,7 @@
 const Flight = require("../models/flightModel");
 const Schedule = require("../models/scheduleModel");
+const Booking = require("../models/bookingModel");
+const { s3 } = require("../utils/s3");
 
 // Admin: Create a new flight
 exports.createFlight = async (req, res) => {
@@ -13,11 +15,28 @@ exports.createFlight = async (req, res) => {
             });
         }
 
+        let logoUrl = null;
+
+        if (req.file) {
+            // Upload logo to S3
+            const params = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: `flight-logos/${Date.now()}_${req.file.originalname}`,
+                Body: req.file.buffer,
+                ContentType: req.file.mimetype,
+                ACL: 'public-read' // so it's publicly accessible
+            };
+
+            const uploadResult = await s3.upload(params).promise();
+            logoUrl = uploadResult.Location;
+        }
+
         const flight = await Flight.create({
             airline,
             source,
             destination,
-            total_seats
+            total_seats,
+            logo: logoUrl
         });
 
         res.status(201).json({
@@ -27,6 +46,7 @@ exports.createFlight = async (req, res) => {
         });
 
     } catch (error) {
+        console.error(error);
         res.status(500).send({ success: false, message: error.message });
     }
 };
