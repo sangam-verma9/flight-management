@@ -1,29 +1,29 @@
 <app-navbar></app-navbar>
-
+ 
 <div class="schedule-management-container">
     <div class="header">
         <h1>Schedule Management 📅</h1>
         <p>Manage flight schedules and time slots</p>
     </div>
-
+ 
     <div class="action-bar">
         <div class="search-box">
             <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"
                 placeholder="Search by airline, source, or destination..." />
             <span class="search-icon">🔍</span>
         </div>
-
+ 
         <select class="filter-select" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
             <option value="ALL">All Schedules</option>
             <option value="UPCOMING">Upcoming Only</option>
             <option value="PAST">Past Only</option>
         </select>
-
+ 
         <button class="btn-add" (click)="openAddModal()">
             ➕ Add New Schedule
         </button>
     </div>
-
+ 
     <div class="stats-bar">
         <div class="stat">
             <span class="stat-label">Total:</span>
@@ -42,15 +42,15 @@
             <span class="stat-value">{{ getScheduleStats().filtered }}</span>
         </div>
     </div>
-
+ 
     <div *ngIf="loading" class="loading">Loading schedules...</div>
-
+ 
     <div *ngIf="error && !loading && !showModal" class="error-message">{{ error }}</div>
-
+ 
     <div *ngIf="!loading && filteredSchedules.length === 0" class="no-data">
         <p>No schedules found.</p>
     </div>
-
+ 
     <div *ngIf="!loading && filteredSchedules.length > 0" class="schedules-list">
         <div *ngFor="let schedule of filteredSchedules" class="schedule-card">
             <div class="card-header">
@@ -72,7 +72,7 @@
                     </span>
                 </div>
             </div>
-
+ 
             <div class="card-body">
                 <div class="time-section">
                     <div class="time-block">
@@ -88,7 +88,7 @@
                         <span class="time-value">{{ formatDateTime(schedule.arrival_time) }}</span>
                     </div>
                 </div>
-
+ 
                 <div class="schedule-details">
                     <div class="detail-item">
                         <span class="label">Total Seats:</span>
@@ -104,7 +104,7 @@
                     </div>
                 </div>
             </div>
-
+ 
             <div class="card-actions">
                 <button class="btn-edit" (click)="openEditModal(schedule)">
                     ✏️ Edit
@@ -115,7 +115,7 @@
             </div>
         </div>
     </div>
-
+ 
     <!-- Add/Edit Modal -->
     <div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
@@ -123,7 +123,7 @@
                 <h2>{{ isEditMode ? 'Edit Schedule' : 'Add New Schedule' }}</h2>
                 <button class="close-btn" (click)="closeModal()">×</button>
             </div>
-
+ 
             <form (ngSubmit)="saveSchedule()" #scheduleForm="ngForm">
                 <div class="modal-body">
                     <div class="form-group">
@@ -137,21 +137,21 @@
                             </option>
                         </select>
                     </div>
-
+ 
                     <div class="form-row">
                         <div class="form-group">
                             <label for="departure_time">Departure Time *</label>
                             <input type="datetime-local" id="departure_time" name="departure_time"
-                                [(ngModel)]="currentSchedule.departure_time" required [disabled]="modalLoading" />
+                                [(ngModel)]="currentSchedule.departure_time" required [disabled]="modalLoading" min={{datefront}}/>
                         </div>
-
+ 
                         <div class="form-group">
                             <label for="arrival_time">Arrival Time *</label>
                             <input type="datetime-local" id="arrival_time" name="arrival_time"
                                 [(ngModel)]="currentSchedule.arrival_time" required [disabled]="modalLoading" />
                         </div>
                     </div>
-
+ 
                     <div class="form-group">
                         <label for="available_seats">Available Seats *</label>
                         <input type="number" id="available_seats" name="available_seats"
@@ -162,10 +162,10 @@
                             {{ getFlightById(currentSchedule.flight)?.total_seats || 'N/A' }}
                         </small>
                     </div>
-
+ 
                     <div *ngIf="error" class="error-message">{{ error }}</div>
                 </div>
-
+ 
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="modalLoading">
                         Cancel

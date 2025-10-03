@@ -1,35 +1,35 @@
 <app-navbar></app-navbar>
-
+ 
 <div class="search-container">
     <h1>Search Flights ✈️</h1>
-
+ 
     <div class="search-card">
         <form (ngSubmit)="searchFlights()" #searchForm="ngForm">
             <div class="search-form">
                 <div class="form-group">
                     <label for="date">Date</label>
-                    <input type="date" id="date" name="date" [(ngModel)]="searchParams.date" [disabled]="loading" />
+                    <input type="date" id="date" name="date" [(ngModel)]="searchParams.date" [disabled]="loading" min={{datefront}}/>
                 </div>
-
+ 
                 <div class="form-group">
                     <label for="source">From</label>
                     <input type="text" id="source" name="source" [(ngModel)]="searchParams.source"
                         placeholder="e.g., Delhi" [disabled]="loading" />
                 </div>
-
+ 
                 <div class="form-group">
                     <label for="destination">To</label>
                     <input type="text" id="destination" name="destination" [(ngModel)]="searchParams.destination"
                         placeholder="e.g., Mumbai" [disabled]="loading" />
                 </div>
-
+ 
                 <div class="form-group">
                     <label for="airline">Airline</label>
                     <input type="text" id="airline" name="airline" [(ngModel)]="searchParams.airline"
                         placeholder="e.g., Air India" [disabled]="loading" />
                 </div>
             </div>
-
+ 
             <div class="button-group">
                 <button type="submit" class="btn-primary" [disabled]="loading">
                     <span *ngIf="loading">Searching...</span>
@@ -41,16 +41,16 @@
             </div>
         </form>
     </div>
-
+ 
     <div *ngIf="error && searched" class="error-message">{{ error }}</div>
-
+ 
     <div *ngIf="loading" class="loading-spinner">
         <p>Searching for flights...</p>
     </div>
-
+ 
     <div *ngIf="!loading && flights.length > 0" class="results-container">
         <h2>Available Flights ({{ flights.length }})</h2>
-
+ 
         <div class="flights-grid">
             <div *ngFor="let flight of flights" class="flight-card">
                 <div class="flight-header">
@@ -59,7 +59,7 @@
                         {{ flight.available_seats }} seats available
                     </span>
                 </div>
-
+ 
                 <div class="flight-route">
                     <div class="route-point">
                         <div class="city">{{ flight.flight?.source }}</div>
@@ -71,13 +71,13 @@
                         <div class="time">{{ formatDate(flight.arrival_time) }}</div>
                     </div>
                 </div>
-
+ 
                 <div class="flight-info">
                     <span class="duration">
                         ⏱️ {{ getDuration(flight.departure_time, flight.arrival_time) }}
                     </span>
                 </div>
-
+ 
                 <button class="btn-book" (click)="selectFlight(flight)" [disabled]="flight.available_seats === 0">
                     <span *ngIf="flight.available_seats > 0">Book Now</span>
                     <span *ngIf="flight.available_seats === 0">Sold Out</span>
@@ -85,7 +85,7 @@
             </div>
         </div>
     </div>
-
+ 
     <!-- Booking Modal -->
     <div *ngIf="selectedFlight" class="modal-overlay" (click)="closeBookingModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
@@ -93,7 +93,7 @@
                 <h2>Book Flight</h2>
                 <button class="close-btn" (click)="closeBookingModal()">×</button>
             </div>
-
+ 
             <div class="modal-body">
                 <div class="booking-summary">
                     <h3>{{ selectedFlight.flight?.airline }}</h3>
@@ -109,7 +109,7 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <div class="seat-selection">
                     <label for="seats">Number of Seats</label>
                     <input type="number" id="seats" [(ngModel)]="seatsToBook" min="1"
@@ -119,7 +119,7 @@
                     </p>
                 </div>
             </div>
-
+ 
             <div class="modal-footer">
                 <button class="btn-cancel" (click)="closeBookingModal()" [disabled]="bookingInProgress">
                     Cancel

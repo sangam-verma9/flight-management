@@ -4,7 +4,7 @@ import { ScheduleRequest } from '../../models/models';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../navbar/navbar';
-
+ 
 @Component({
   selector: 'app-schedule-management',
   templateUrl: './schedule-management.html',
@@ -18,30 +18,31 @@ export class ScheduleManagementComponent implements OnInit {
   flights: any[] = [];
   loading: boolean = false;
   error: string = '';
-
+ 
   searchTerm: string = '';
   filterStatus: string = 'ALL'; // ALL, UPCOMING, PAST
-
+ 
   showModal: boolean = false;
   isEditMode: boolean = false;
   modalLoading: boolean = false;
-
+ 
   currentSchedule: ScheduleRequest = {
     flight: '',
     departure_time: '',
     arrival_time: '',
     available_seats: 0
   };
-
+  datefront=new Date();
+ 
   selectedScheduleId: string = '';
-
+ 
   constructor(private flightService: FlightService) { }
-
+ 
   async ngOnInit(): Promise<void> {
     await this.loadFlights();
     await this.loadSchedules();
   }
-
+ 
   async loadFlights(): Promise<void> {
     try {
       const response = await this.flightService.getAllFlights();
@@ -50,11 +51,11 @@ export class ScheduleManagementComponent implements OnInit {
       console.error('Error loading flights:', error);
     }
   }
-
+ 
   async loadSchedules(): Promise<void> {
     this.loading = true;
     this.error = '';
-
+ 
     try {
       const response = await this.flightService.getAllSchedules();
       this.schedules = response.schedules || [];
@@ -66,10 +67,10 @@ export class ScheduleManagementComponent implements OnInit {
       this.loading = false;
     }
   }
-
+ 
   applyFilters(): void {
     let filtered = [...this.schedules];
-
+ 
     // Search filter
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
@@ -79,7 +80,7 @@ export class ScheduleManagementComponent implements OnInit {
         schedule.flight?.destination?.toLowerCase().includes(term)
       );
     }
-
+ 
     // Status filter
     const now = new Date();
     if (this.filterStatus === 'UPCOMING') {
@@ -91,19 +92,19 @@ export class ScheduleManagementComponent implements OnInit {
         new Date(schedule.departure_time) <= now
       );
     }
-
+ 
     // Sort by departure time (upcoming first)
     filtered.sort((a, b) =>
       new Date(a.departure_time).getTime() - new Date(b.departure_time).getTime()
     );
-
+ 
     this.filteredSchedules = filtered;
   }
-
+ 
   onFilterChange(): void {
     this.applyFilters();
   }
-
+ 
   openAddModal(): void {
     this.isEditMode = false;
     this.currentSchedule = {
@@ -112,17 +113,18 @@ export class ScheduleManagementComponent implements OnInit {
       arrival_time: '',
       available_seats: 0
     };
+ 
     this.showModal = true;
   }
-
+ 
   openEditModal(schedule: any): void {
     this.isEditMode = true;
     this.selectedScheduleId = schedule._id;
-
+ 
     // Convert dates to datetime-local format
     const depTime = new Date(schedule.departure_time);
     const arrTime = new Date(schedule.arrival_time);
-
+ 
     this.currentSchedule = {
       flight: schedule.flight?._id || schedule.flight,
       departure_time: this.formatDateTimeLocal(depTime),
@@ -131,7 +133,7 @@ export class ScheduleManagementComponent implements OnInit {
     };
     this.showModal = true;
   }
-
+ 
   closeModal(): void {
     this.showModal = false;
     this.currentSchedule = {
@@ -143,22 +145,22 @@ export class ScheduleManagementComponent implements OnInit {
     this.selectedScheduleId = '';
     this.error = '';
   }
-
+ 
   async saveSchedule(): Promise<void> {
     if (!this.validateSchedule()) {
       return;
     }
-
+ 
     this.modalLoading = true;
     this.error = '';
-
+ 
     try {
       const scheduleData = {
         ...this.currentSchedule,
         departure_time: new Date(this.currentSchedule.departure_time).toISOString(),
         arrival_time: new Date(this.currentSchedule.arrival_time).toISOString()
       };
-
+ 
       if (this.isEditMode) {
         await this.flightService.updateSchedule(this.selectedScheduleId, scheduleData);
         alert('Schedule updated successfully!');
@@ -166,7 +168,7 @@ export class ScheduleManagementComponent implements OnInit {
         await this.flightService.createSchedule(scheduleData);
         alert('Schedule created successfully!');
       }
-
+ 
       this.closeModal();
       await this.loadSchedules();
     } catch (error: any) {
@@ -176,14 +178,14 @@ export class ScheduleManagementComponent implements OnInit {
       this.modalLoading = false;
     }
   }
-
+ 
   async deleteSchedule(id: string, flightName: string): Promise<void> {
     if (!confirm(`Are you sure you want to delete this schedule for ${flightName}?`)) {
       return;
     }
-
+ 
     this.loading = true;
-
+ 
     try {
       await this.flightService.deleteSchedule(id);
       alert('Schedule deleted successfully!');
@@ -195,43 +197,48 @@ export class ScheduleManagementComponent implements OnInit {
       this.loading = false;
     }
   }
-
+ 
   validateSchedule(): boolean {
+    const depTime = new Date(this.currentSchedule.departure_time);
+    const arrTime = new Date(this.currentSchedule.arrival_time);
+    const currTime=new Date();
+ 
     if (!this.currentSchedule.flight) {
       this.error = 'Please select a flight';
       return false;
     }
-    if (!this.currentSchedule.departure_time) {
-      this.error = 'Departure time is required';
+    if (!this.currentSchedule.departure_time || depTime.getTime()<currTime.getTime()) {
+     
+      this.error = 'Departure time should be correct';
       return false;
     }
+ 
     if (!this.currentSchedule.arrival_time) {
       this.error = 'Arrival time is required';
       return false;
     }
-
-    const depTime = new Date(this.currentSchedule.departure_time);
-    const arrTime = new Date(this.currentSchedule.arrival_time);
-
+ 
+ 
+ 
     if (depTime >= arrTime) {
       this.error = 'Departure time must be before arrival time';
       return false;
     }
-
+ 
     const selectedFlight = this.flights.find(f => f._id === this.currentSchedule.flight);
     if (selectedFlight && this.currentSchedule.available_seats > selectedFlight.total_seats) {
       this.error = `Available seats cannot exceed total seats (${selectedFlight.total_seats})`;
       return false;
     }
-
+ 
     if (!this.currentSchedule.available_seats || this.currentSchedule.available_seats < 0) {
       this.error = 'Available seats must be 0 or more';
       return false;
     }
-
+ 
     return true;
   }
-
+ 
   formatDateTimeLocal(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -240,15 +247,15 @@ export class ScheduleManagementComponent implements OnInit {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
-
+ 
   formatDateTime(date: any): string {
     return new Date(date).toLocaleString();
   }
-
+ 
   isUpcoming(date: any): boolean {
     return new Date(date) > new Date();
   }
-
+ 
   getDuration(departure: any, arrival: any): string {
     const dep = new Date(departure);
     const arr = new Date(arrival);
@@ -257,7 +264,7 @@ export class ScheduleManagementComponent implements OnInit {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   }
-
+ 
   getScheduleStats() {
     const now = new Date();
     return {
@@ -267,7 +274,7 @@ export class ScheduleManagementComponent implements OnInit {
       filtered: this.filteredSchedules.length
     };
   }
-
+ 
   getFlightById(id: string) {
     return this.flights.find(f => f._id === id);
   }
