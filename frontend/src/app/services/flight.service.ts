@@ -11,9 +11,11 @@ export class FlightService {
 
   // ========== FLIGHT OPERATIONS (Admin) ==========
 
-  // Create a new flight
-  async createFlight(flightData: FlightRequest): Promise<any> {
+  // Create a new flight (with logo upload support)
+  async createFlight(flightData: FlightRequest | FormData): Promise<any> {
     try {
+      // If flightData is FormData, pass it directly
+      // ApiService should handle FormData automatically
       return await this.apiService.post('/flights', flightData);
     } catch (error: any) {
       throw error.response?.data || error;
@@ -38,9 +40,11 @@ export class FlightService {
     }
   }
 
-  // Update flight
-  async updateFlight(id: string, flightData: Partial<FlightRequest>): Promise<any> {
+  // Update flight (with logo upload support)
+  async updateFlight(id: string, flightData: Partial<FlightRequest> | FormData): Promise<any> {
     try {
+      // If flightData is FormData, pass it directly
+      // ApiService should handle FormData automatically
       return await this.apiService.put(`/flights/${id}`, flightData);
     } catch (error: any) {
       throw error.response?.data || error;

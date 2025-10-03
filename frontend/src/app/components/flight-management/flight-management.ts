@@ -8,7 +8,7 @@ import { NavbarComponent } from '../navbar/navbar';
 @Component({
   selector: 'app-flight-management',
   templateUrl: './flight-management.html',
-  imports: [FormsModule, CommonModule,NavbarComponent],
+  imports: [FormsModule, CommonModule, NavbarComponent],
   styleUrls: ['./flight-management.css']
 })
 export class FlightManagementComponent implements OnInit {
@@ -31,6 +31,8 @@ export class FlightManagementComponent implements OnInit {
   };
 
   selectedFlightId: string = '';
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
 
   constructor(private flightService: FlightService) { }
 
@@ -68,6 +70,45 @@ export class FlightManagementComponent implements OnInit {
     );
   }
 
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        this.error = 'Please select a valid image file (JPEG, PNG, or GIF)';
+        return;
+      }
+
+      // Validate file size (e.g., max 5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        this.error = 'File size must be less than 5MB';
+        return;
+      }
+
+      this.selectedFile = file;
+      this.error = '';
+
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage(): void {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    // Reset file input
+    const fileInput = document.getElementById('logo') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
   openAddModal(): void {
     this.isEditMode = false;
     this.currentFlight = {
@@ -76,6 +117,8 @@ export class FlightManagementComponent implements OnInit {
       destination: '',
       total_seats: 0
     };
+    this.selectedFile = null;
+    this.imagePreview = null;
     this.showModal = true;
   }
 
@@ -88,6 +131,8 @@ export class FlightManagementComponent implements OnInit {
       destination: flight.destination,
       total_seats: flight.total_seats
     };
+    this.selectedFile = null;
+    this.imagePreview = flight.logo || null;
     this.showModal = true;
   }
 
@@ -100,6 +145,8 @@ export class FlightManagementComponent implements OnInit {
       total_seats: 0
     };
     this.selectedFlightId = '';
+    this.selectedFile = null;
+    this.imagePreview = null;
     this.error = '';
   }
 
@@ -112,11 +159,21 @@ export class FlightManagementComponent implements OnInit {
     this.error = '';
 
     try {
+      const formData = new FormData();
+      formData.append('airline', this.currentFlight.airline);
+      formData.append('source', this.currentFlight.source);
+      formData.append('destination', this.currentFlight.destination);
+      formData.append('total_seats', this.currentFlight.total_seats.toString());
+
+      if (this.selectedFile) {
+        formData.append('logo', this.selectedFile);
+      }
+
       if (this.isEditMode) {
-        await this.flightService.updateFlight(this.selectedFlightId, this.currentFlight);
+        await this.flightService.updateFlight(this.selectedFlightId, formData);
         alert('Flight updated successfully!');
       } else {
-        await this.flightService.createFlight(this.currentFlight);
+        await this.flightService.createFlight(formData);
         alert('Flight created successfully!');
       }
 
