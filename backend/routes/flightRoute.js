@@ -14,7 +14,7 @@ const router = express.Router();
 router.route("/flights").post(isAuthUser, isAdmin, upload.single('logo'), createFlight);
 router.route("/flights").get(isAuthUser, isAdmin, getAllFlights);
 router.route("/flights/:id").get(isAuthUser, isAdmin, getFlightById);
-router.route("/flights/:id").put(isAuthUser, isAdmin, updateFlight);
+router.route("/flights/:id").put(isAuthUser, isAdmin, upload.single('logo'), updateFlight);
 router.route("/flights/:id").delete(isAuthUser, isAdmin, deleteFlight);
 
 module.exports = router;

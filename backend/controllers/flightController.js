@@ -1,7 +1,7 @@
 const Flight = require("../models/flightModel");
 const Schedule = require("../models/scheduleModel");
 const Booking = require("../models/bookingModel");
-const { s3 } = require("../utils/s3");
+const s3 = require("../utils/s3");
 
 // Admin: Create a new flight
 exports.createFlight = async (req, res) => {
@@ -18,13 +18,11 @@ exports.createFlight = async (req, res) => {
         let logoUrl = null;
 
         if (req.file) {
-            // Upload logo to S3
             const params = {
                 Bucket: process.env.AWS_BUCKET_NAME,
                 Key: `flight-logos/${Date.now()}_${req.file.originalname}`,
                 Body: req.file.buffer,
                 ContentType: req.file.mimetype,
-                ACL: 'public-read' // so it's publicly accessible
             };
 
             const uploadResult = await s3.upload(params).promise();
@@ -101,9 +99,46 @@ exports.updateFlight = async (req, res) => {
             });
         }
 
+        // Handle logo upload if new file is provided
+        let logoUrl = flight.logo; // Keep existing logo by default
+
+        if (req.file) {
+            const params = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: `flight-logos/${Date.now()}_${req.file.originalname}`,
+                Body: req.file.buffer,
+                ContentType: req.file.mimetype,
+            };
+
+            const uploadResult = await s3.upload(params).promise();
+            logoUrl = uploadResult.Location;
+
+            // Optional: Delete old logo from S3 if it exists
+            if (flight.logo) {
+                try {
+                    const oldKey = flight.logo.split('.com/')[1];
+                    if (oldKey) {
+                        await s3.deleteObject({
+                            Bucket: process.env.AWS_BUCKET_NAME,
+                            Key: oldKey
+                        }).promise();
+                    }
+                } catch (deleteError) {
+                    console.error('Error deleting old logo:', deleteError);
+                    // Continue even if delete fails
+                }
+            }
+        }
+
+        // Update flight with new data
+        const updateData = {
+            ...req.body,
+            logo: logoUrl
+        };
+
         flight = await Flight.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             { new: true, runValidators: true }
         );
 
@@ -138,6 +173,22 @@ exports.deleteFlight = async (req, res) => {
                 success: false,
                 message: "Cannot delete flight with existing schedules. Please delete schedules first."
             });
+        }
+
+        // Optional: Delete logo from S3 if it exists
+        if (flight.logo) {
+            try {
+                const key = flight.logo.split('.com/')[1];
+                if (key) {
+                    await s3.deleteObject({
+                        Bucket: process.env.AWS_BUCKET_NAME,
+                        Key: key
+                    }).promise();
+                }
+            } catch (deleteError) {
+                console.error('Error deleting logo:', deleteError);
+                // Continue with flight deletion even if logo delete fails
+            }
         }
 
         await Flight.findByIdAndDelete(req.params.id);
