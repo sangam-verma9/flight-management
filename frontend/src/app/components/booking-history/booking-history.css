@@ -18,6 +18,14 @@ h1 {
     margin-bottom: 30px;
 }
 
+.booking-price{
+    background: #faf4a8;
+    color: #151514;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
 .stat-card {
     background: white;
     padding: 25px;

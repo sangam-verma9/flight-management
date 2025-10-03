@@ -30,7 +30,8 @@ export class ScheduleManagementComponent implements OnInit {
     flight: '',
     departure_time: '',
     arrival_time: '',
-    available_seats: 0
+    available_seats: 0,
+    price: 0
   };
   datefront=new Date();
  
@@ -111,7 +112,8 @@ export class ScheduleManagementComponent implements OnInit {
       flight: '',
       departure_time: '',
       arrival_time: '',
-      available_seats: 0
+      available_seats: 0,
+      price: 0
     };
  
     this.showModal = true;
@@ -129,7 +131,8 @@ export class ScheduleManagementComponent implements OnInit {
       flight: schedule.flight?._id || schedule.flight,
       departure_time: this.formatDateTimeLocal(depTime),
       arrival_time: this.formatDateTimeLocal(arrTime),
-      available_seats: schedule.available_seats
+      available_seats: schedule.available_seats,
+      price: schedule.price
     };
     this.showModal = true;
   }
@@ -140,7 +143,8 @@ export class ScheduleManagementComponent implements OnInit {
       flight: '',
       departure_time: '',
       arrival_time: '',
-      available_seats: 0
+      available_seats: 0,
+      price: 0
     };
     this.selectedScheduleId = '';
     this.error = '';

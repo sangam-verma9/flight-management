@@ -165,6 +165,20 @@ input:disabled {
     font-size: 13px;
     font-weight: 600;
 }
+.flight-price{
+    background: #faf4a8;
+    color: #151514;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.seats-info-container{
+    display: flex;
+    width: 100%;
+    justify-items: space-between;
+    gap: 10px;
+}
 
 .flight-route {
     display: flex;

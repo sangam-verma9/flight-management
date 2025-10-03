@@ -52,6 +52,9 @@
                     <h3>{{ booking.schedule?.flight?.airline }}</h3>
                     <p class="booking-id">Booking ID: {{ booking._id }}</p>
                 </div>
+                <span class="booking-price">
+                    ₹ {{booking.price || 2000}} 
+                </span>
                 <span [class]="getStatusClass(booking.status)">
                     {{ booking.status }}
                 </span>

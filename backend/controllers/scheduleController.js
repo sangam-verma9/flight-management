@@ -5,9 +5,9 @@ const Booking = require("../models/bookingModel");
 // Admin: Create a new schedule for a flight
 exports.createSchedule = async (req, res) => {
     try {
-        const { flight, departure_time, arrival_time, available_seats } = req.body;
+        const { flight, departure_time, arrival_time, available_seats, price } = req.body;
 
-        if (!flight || !departure_time || !arrival_time || available_seats === undefined) {
+        if (!flight || !departure_time || !arrival_time || available_seats === undefined || price === undefined) {
             return res.status(400).send({
                 success: false,
                 message: "All fields are required"
@@ -43,7 +43,8 @@ exports.createSchedule = async (req, res) => {
             flight,
             departure_time,
             arrival_time,
-            available_seats
+            available_seats,
+            price
         });
 
         const populatedSchedule = await Schedule.findById(schedule._id).populate('flight');
@@ -129,6 +130,16 @@ exports.updateSchedule = async (req, res) => {
                 return res.status(400).send({
                     success: false,
                     message: "Departure time must be before arrival time"
+                });
+            }
+        }
+
+        // Validate price
+        if (req.body.price !== undefined) {
+            if (req.body.price <= 0) {
+                return res.status(400).send({
+                    success: false,
+                    message: "Price must be greater than 0"
                 });
             }
         }

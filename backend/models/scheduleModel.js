@@ -19,6 +19,11 @@ const scheduleSchema = new mongoose.Schema({
         required: true,
         min: [0, "Available seats cannot be negative"],
     },
+    price:{
+        type: Number,
+        required: true,
+        min: [0, "Price cannot be negative"],
+    }
 }, {
     timestamps: true,
 });

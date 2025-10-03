@@ -25,6 +25,9 @@ const bookingSchema = new mongoose.Schema({
         enum: ['CONFIRMED', 'CANCELLED'],
         default: 'CONFIRMED',
     },
+    price:{
+        type: Number
+    }
 }, {
     timestamps: true,
 });

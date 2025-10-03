@@ -70,6 +70,7 @@ export interface ApiResponse<T> {
 export interface BookingRequest {
     schedule_id: string;
     seats_booked: number;
+    price: number;
 }
 
 // Flight Create/Update
@@ -86,6 +87,7 @@ export interface ScheduleRequest {
     departure_time: string;
     arrival_time: string;
     available_seats: number;
+    price: number;
 }
 
 // Report Interfaces

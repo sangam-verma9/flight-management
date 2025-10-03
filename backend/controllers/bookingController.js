@@ -137,7 +137,8 @@ exports.bookTicket = async (req, res) => {
             user: user_id,
             schedule: schedule_id,
             seats_booked,
-            status: 'CONFIRMED'
+            status: 'CONFIRMED',
+            price:seats_booked*schedule.price
         }], { session });
 
         // Commit transaction
@@ -166,6 +167,7 @@ exports.bookTicket = async (req, res) => {
                 departure: schedule.departure_time,
                 arrival: schedule.arrival_time,
                 seats: seats_booked,
+                price: seats_booked * schedule.price,
                 status: 'CONFIRMED'
             }
         });
