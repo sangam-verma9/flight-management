@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
         minLength: [6, "Password must be at least 6 characters"],
     },
     phone: {
-        type: String,
+        type: Number,
         length: [10, "Phone number can't exceed 10 digits"],
     },
     role: {

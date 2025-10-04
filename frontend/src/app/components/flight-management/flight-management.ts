@@ -168,7 +168,8 @@ export class FlightManagementComponent implements OnInit {
       if (this.selectedFile) {
         formData.append('logo', this.selectedFile);
       }
-
+      console.log(this.currentFlight.airline,this.selectedFile)
+      console.log(formData);
       if (this.isEditMode) {
         await this.flightService.updateFlight(this.selectedFlightId, formData);
         alert('Flight updated successfully!');

@@ -79,7 +79,10 @@
     <div class="flights-grid">
       <div *ngFor="let flight of flights" class="flight-card">
         <div class="flight-header">
-          <h3>{{ flight.flight?.airline }}</h3>
+          <div class="airline-heding-container">
+            <h3>{{ flight.flight?.airline }}</h3>
+            <img src="{{ flight.flight?.logo }}" alt="logo" class="airline-logo" />
+          </div>
           <span class="available-seats"> {{ flight.available_seats }} seats available </span>
           <span class="flight-price">₹ {{ flight.price || 2000 }}</span>
         </div>

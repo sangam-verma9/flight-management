@@ -79,6 +79,7 @@ export interface FlightRequest {
     source: string;
     destination: string;
     total_seats: number;
+    logo?: object;
 }
 
 // Schedule Create/Update

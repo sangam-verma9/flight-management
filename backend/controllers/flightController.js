@@ -6,7 +6,7 @@ const s3 = require("../utils/s3");
 // Admin: Create a new flight
 exports.createFlight = async (req, res) => {
     try {
-        const { airline, source, destination, total_seats } = req.body;
+        const { airline, source, destination, total_seats, logo } = req.body;
 
         if (!airline || !source || !destination || !total_seats) {
             return res.status(400).send({
@@ -14,7 +14,6 @@ exports.createFlight = async (req, res) => {
                 message: "All fields are required"
             });
         }
-
         let logoUrl = null;
 
         if (req.file) {
